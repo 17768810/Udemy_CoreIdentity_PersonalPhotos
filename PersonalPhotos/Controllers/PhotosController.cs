@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PersonalPhotos.Filters;
@@ -25,6 +26,7 @@ namespace PersonalPhotos.Controllers
         }
 
         [ServiceFilter(typeof(LoginAttribute))]
+        [Authorize]
         public IActionResult Upload()
         {
             return View();
@@ -32,11 +34,13 @@ namespace PersonalPhotos.Controllers
 
         [HttpPost]
         [ServiceFilter(typeof(LoginAttribute))]
+        [Authorize]
         public async Task<IActionResult> Upload(PhotoUploadViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var userName = _httpContextAccessor.HttpContext.Session.GetString("User");
+                //var userName = _httpContextAccessor.HttpContext.Session.GetString("User");
+                var userName = User.Identity.Name;
                 var uniqueKey = _keyGenerator.GetKey(userName);
 
                 var fileName = Path.GetFileName(model.File.FileName);
@@ -47,9 +51,11 @@ namespace PersonalPhotos.Controllers
         }
 
         [ServiceFilter(typeof(LoginAttribute))]
+        [Authorize]
         public IActionResult Display()
         {
-            var userName = _httpContextAccessor.HttpContext.Session.GetString("User");
+            //var userName = _httpContextAccessor.HttpContext.Session.GetString("User");
+            var userName = User.Identity.Name;
             return View("Display", userName);
         }
     }

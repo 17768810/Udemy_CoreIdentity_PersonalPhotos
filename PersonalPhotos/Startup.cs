@@ -70,6 +70,11 @@ namespace PersonalPhotos
             })
             .AddEntityFrameworkStores<IdentityDbContext>()
             .AddDefaultTokenProviders();
+
+            services.ConfigureApplicationCookie(opt =>
+            {
+                opt.LoginPath = "/Logins/Index";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -87,6 +92,7 @@ namespace PersonalPhotos
 
             app.UseStaticFiles();
             app.UseSession();
+            app.UseAuthentication();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

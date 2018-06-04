@@ -11,13 +11,18 @@ namespace PersonalPhotos.Controllers
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogins _loginService;
 
-        public LoginsController(ILogins loginService, IHttpContextAccessor httpContextAccessor, UserManager<IdentityUser> userManager)
+        public LoginsController(ILogins loginService, 
+            IHttpContextAccessor httpContextAccessor, 
+            UserManager<IdentityUser> userManager,
+            SignInManager<IdentityUser> signInManager)
         {
             _loginService = loginService;
             _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         public IActionResult Index(string returnUrl = null)
@@ -35,24 +40,12 @@ namespace PersonalPhotos.Controllers
                 return View("Login", model);
             }
 
-            var user = await _loginService.GetUser(model.Email);
-            if (user != null)
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+
+            if(!result.Succeeded)
             {
-                if (user.Password == model.Password)
-                {
-                    //ToDo: redirect to home page
-                    _httpContextAccessor.HttpContext.Session.SetString("User", model.Email);
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Invalid password");
-                    return View("Login", model);
-                }
-            }
-            else
-            {
-                ModelState.AddModelError("", "User was not found");
-                return View("Login", model);
+                ModelState.AddModelError(string.Empty, "Username and/or password is incorrect");
+                return View();
             }
 
             if (!string.IsNullOrEmpty(model.ReturnUrl))
