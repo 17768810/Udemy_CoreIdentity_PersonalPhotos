@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -87,6 +88,14 @@ namespace PersonalPhotos.Controllers
                 }
             }
 
+            return RedirectToAction("Index", "Logins");
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Logins");
         }
     }
