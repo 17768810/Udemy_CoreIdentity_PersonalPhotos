@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using PersonalPhotos.Models;
 
@@ -9,12 +10,14 @@ namespace PersonalPhotos.Controllers
     public class LoginsController : Controller
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogins _loginService;
 
-        public LoginsController(ILogins loginService, IHttpContextAccessor httpContextAccessor)
+        public LoginsController(ILogins loginService, IHttpContextAccessor httpContextAccessor, UserManager<IdentityUser> userManager)
         {
             _loginService = loginService;
             _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
         }
 
         public IActionResult Index(string returnUrl = null)
@@ -76,14 +79,20 @@ namespace PersonalPhotos.Controllers
                 return View(model);
             }
 
-            var existingUser = await _loginService.GetUser(model.Email);
-            if (existingUser != null)
+            var user = new IdentityUser
             {
-                ModelState.AddModelError("", "This email adress is already registered");
-                return View(model);
-            }
+                UserName = model.Email,
+                Email = model.Email
+            };
 
-            await _loginService.CreateUser(model.Email, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if(!result.Succeeded)
+            {
+                foreach(var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, $"{error.Code}-{error.Description}");
+                }
+            }
 
             return RedirectToAction("Index", "Logins");
         }
