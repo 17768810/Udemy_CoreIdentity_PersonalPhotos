@@ -26,7 +26,7 @@ namespace PersonalPhotos.Controllers
         }
 
         [ServiceFilter(typeof(LoginAttribute))]
-        [Authorize]
+        [Authorize(policy: "EditorOver18Policy")]
         public IActionResult Upload()
         {
             return View();
@@ -34,7 +34,7 @@ namespace PersonalPhotos.Controllers
 
         [HttpPost]
         [ServiceFilter(typeof(LoginAttribute))]
-        [Authorize]
+        [Authorize(policy: "EditorOver18Policy")]
         public async Task<IActionResult> Upload(PhotoUploadViewModel model)
         {
             if (ModelState.IsValid)
